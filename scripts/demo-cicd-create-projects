@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+[[ -z "$OPENSHIFT_URL" ]] && { echo "OpenShift URL not provided, exiting ..." ; exit 1; }
+
+export USERNAME=${USERNAME:="developer"}
+export PASSWD=${PASSWD:="any"}
+
+oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
+
+# Create Projects
+echo "Creating DEV namespace ..."
+oc new-project dev --display-name="Dev Environment" && \
+echo "Creating STAGE namespace ..."
+oc new-project stage --display-name="Stage environment" && \
+echo "Creating PRO namespace ..."
+oc new-project pro --display-name="Pro environment" && \
+echo "Creating CI/CD namespace ..."
+oc new-project cicd --display-name="CI/CD Management"
+
+# Grant Jenkins Access to Projects
+echo "Adding roles to admin user ..."
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n dev
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n stage
+oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pro

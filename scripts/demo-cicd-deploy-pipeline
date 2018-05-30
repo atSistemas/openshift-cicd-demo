@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+[[ -z "$OPENSHIFT_URL" ]] && { echo "OpenShift URL not provided, exiting ..." ; exit 1; }
+
+export USERNAME=${USERNAME:="developer"}
+export PASSWD=${PASSWD:="any"}
+
+oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
+
+oc new-app -f ../resources/jenkins-pipeline.yaml -n cicd

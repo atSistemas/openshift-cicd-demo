@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: dev-recreate-strategy
+message: This Template create all the polaris resources to deploy automatically a springboot jar in dev environment
+metadata:
+  annotations:
+    description: This it deploy springboot application in in dev environment
+    iconClass: icon-jboss
+    tags: dev, recreate-strategy
+  name: dev-recreate-strategy
+parameters:
+- displayName: Project name
+  value: dev
+  name: PROJECT
+  required: true
+- displayName: Application name
+  value: polaris
+  name: APP
+  required: true
+- displayName: Application jar
+  value: spring-boot.jar
+  name: JARNAME
+  required: true
+- displayName: Application repository URL
+  value: https://github.com/japorras/polaris.git
+  name: APP_REPO_URL
+  required: true
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${APP}-dc
+  spec:
+    replicas: 2
+    selector:
+      deploymentconfig: ${APP}-dc
+    strategy:
+      # We set the type of strategy to Recreate, which means that it will be scaled down prior to being scaled up
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${APP}-dc
+      spec:
+
+        containers:
+         - env:
+            - name: JAVA_APP_JAR
+              value: ${JARNAME}
+           image: ${PROJECT}/${APP}:latest
+           name: ${APP}
+           ports:
+             - containerPort: 8080
+               protocol: TCP
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APP}
+        from:
+          kind: ImageStreamTag
+          name: '${APP}:latest'
+      type: ImageChange
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${APP}-r
+  spec:
+    to:
+      kind: Service
+      name: ${APP}-service
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+   labels:
+     app: ${APP}
+   name: ${APP}
+   namespace: ${PROJECT}
+  spec:
+   output:
+    to:
+      kind: ImageStreamTag
+      name: '${APP}:latest'
+   runPolicy: Serial
+   source:
+    contextDir: /
+    git:
+      ref: master
+      uri: ${APP_REPO_URL}
+    type: Git
+   strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: 'redhat-openjdk18-openshift:latest'
+    type: Source
+  triggers: []
