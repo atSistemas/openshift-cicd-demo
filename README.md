@@ -18,7 +18,7 @@ Openshift CI/CD provisioner demo
 
 - Start pipeline
 
-## CICD Stack warm up
+## CI/CD Stack warm up
 ```
 OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-create-projects
 OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-admin-setup
