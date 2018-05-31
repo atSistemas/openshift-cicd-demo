@@ -8,7 +8,7 @@ metadata:
     description: Deploys openjdk8 image streams
     iconClass: icon-jboss
     tags: image stream,openjdk8
-  name: polaris-DEV
+  name: image-stream-openshift-openjdk8
 parameters:
 - displayName: Project name
   value: dev
