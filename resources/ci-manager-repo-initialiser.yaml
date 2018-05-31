@@ -34,7 +34,7 @@ objects:
             CI_MANAGER_HOSTNAME=$(oc get route ci-manager -o template --template='{{.spec.host}}')
 
             _RETURN=$(curl -X POST --header 'Content-Type: application/json' --header 'Accept: application/json' \
-            "http://${CI_MANAGER_HOSTNAME}/projects?projectName=polaris3&repoUrl=https%3A%2F%2Fgithub.com%2FatSistemas%2Fpolaris.git")
+            "http://${CI_MANAGER_HOSTNAME}/projects?projectName=polaris&repoUrl=https%3A%2F%2Fgithub.com%2FatSistemas%2Fpolaris.git")
 
             sleep 5
 
