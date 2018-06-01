@@ -151,7 +151,7 @@ parameters:
   name: GOGS_PASSWD
   required: true
   value: gogs
-- description: Max memory allocated to the Nexus pod
+- description: Max memory allocated to the Gogs pod
   displayName: Max Memory
   name: MAX_MEMORY
   required: true
