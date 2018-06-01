@@ -96,3 +96,21 @@ objects:
               namespace: ${PROJECT_REFERENCE}
           type: ImageChange
         - type: ConfigChange
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APP}-service
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+    selector:
+      deploymentconfig: ${APP}-dc
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${APP}-r
+  spec:
+    to:
+      kind: Service
+      name: ${APP}-service
