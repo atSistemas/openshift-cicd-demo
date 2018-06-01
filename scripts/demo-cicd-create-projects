@@ -16,9 +16,3 @@ echo "Creating PRO namespace ..."
 oc new-project pro --display-name="Pro environment" && \
 echo "Creating CI/CD namespace ..."
 oc new-project cicd --display-name="CI/CD Management"
-
-# Grant Jenkins Access to Projects
-echo "Adding roles to admin user ..."
-oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n dev
-oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n stage
-oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pro
