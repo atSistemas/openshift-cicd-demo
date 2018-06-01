@@ -16,7 +16,7 @@ parameters:
   required: true
 - displayName: Reference project name
   value: dev
-  name: PROJECTREFERENCE
+  name: PROJECT_REFERENCE
   required: true
 - displayName: Application name
   value: polaris
@@ -89,28 +89,10 @@ objects:
       triggers:
         - imageChangeParams:
             containerNames:
-              - deployment-pre
+              - deployment-stage
             from:
               kind: ImageStreamTag
               name: '${APP}:latest'
-              namespace: ${PROJECTREFERENCE}
+              namespace: ${PROJECT_REFERENCE}
           type: ImageChange
         - type: ConfigChange
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: ${APP}-service
-  spec:
-    ports:
-    - port: 8080
-      targetPort: 8080
-    selector:
-      deploymentconfig: ${APP}-dc
-- apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${APP}-r
-  spec:
-    to:
-      kind: Service
-      name: ${APP}-service

@@ -19,31 +19,31 @@ Openshift CI/CD provisioner demo
 
 ## CI/CD Stack warm up
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-create-projects
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-admin-setup
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-create-projects
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-admin-setup
 ```
 
 ## Deploy CI/CD Stack
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deploy-stack
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-stack
 ```
 
 ## Deploy CI-Manager
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deploy-ci-manager
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-ci-manager
 ```
 
 ## Setup deployment strategies per environment
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deployment-strategies-setup
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deployment-strategies-setup
 ```
 
 ## Initialise CICD Stack via CI-Manager
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-ci-manager-initialiser
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-ci-manager-initialiser
 ```
 
 ## Start pipeline
 ```
-OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-start-pipeline
+OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-start-pipeline
 ```
