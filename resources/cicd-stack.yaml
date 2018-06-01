@@ -34,115 +34,115 @@ objects:
     strategy:
       jenkinsPipelineStrategy:
         jenkinsfile: |-
-        def version, activeService, routeHost, mvnCmd = "mvn -s configuration/settings.xml"
-        def appName="dpro"
-        def project="pro"
-        def tag="blue"
-        def altTag="green"
-        def verbose="false"
-        def app="polaris"
+          def version, activeService, routeHost, mvnCmd = "mvn -s configuration/settings.xml"
+          def appName="dpro"
+          def project="pro"
+          def tag="blue"
+          def altTag="green"
+          def verbose="false"
+          def app="polaris"
 
-        pipeline {
-          agent {
-            label 'maven'
-          }
-          stages {
-            stage('Build App') {
-              steps {
-                git branch: 'feature/cicd-demo', url: 'http://gogs:3000/gogs/polaris.git'
-                script {
-                    def pom = readMavenPom file: 'pom.xml'
-                    version = pom.version
-                }
-                sh "mvn install -DskipTests=true"
-              }
+          pipeline {
+            agent {
+              label 'maven'
             }
-            stage('Test') {
-              steps {
-                sh "mvn test"
-                step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
-              }
-            }
-
-            stage('Code Analysis') {
-              steps {
-                script {
-                  sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube:9000 -DskipTests=true"
-                }
-              }
-            }
-
-            stage('Archive App') {
-              steps {
-                sh "${mvnCmd} deploy -DskipTests=true -P nexus3"
-              }
-            }
-
-            stage('Build Image') {
-              steps {
-                echo "building image ${app}"
-                openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev"
-              }
-            }
-
-            stage('Deploy DEV') {
-              steps {
-                openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
-                openshiftVerifyDeployment depCfg: "${app}-dc", verbose: verbose, namespace: "dev"
-
-              }
-            }
-
-            stage('Deploy STAGE') {
-              steps {
-                openshiftDeploy depCfg: "${app}-dc", verbose:verbose, namespace: "stage"
-              }
-            }
-
-            stage('Upload version artifact in PRO') {
-              steps {
-                input message: "Test deployment in PRO. Approve?", id: "approval"
-              }
-            }
-
-            stage('Initialize PRO') {
-              steps {
-
-                script {
-                  sh "oc get route ${appName} -n ${project} -o jsonpath='{ .spec.to.name }' --loglevel=4 > activeservice"
-                  activeService = readFile('activeservice').trim()
-
-                  if (activeService == "${project}-blue") {
-                    tag = "green"
-                    altTag = "blue"
+            stages {
+              stage('Build App') {
+                steps {
+                  git branch: 'feature/cicd-demo', url: 'http://gogs:3000/gogs/polaris.git'
+                  script {
+                      def pom = readMavenPom file: 'pom.xml'
+                      version = pom.version
                   }
+                  sh "mvn install -DskipTests=true"
+                }
+              }
+              stage('Test') {
+                steps {
+                  sh "mvn test"
+                  step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+                }
+              }
 
-                  sh "oc get route ${tag}-d${project} -n ${project} -o jsonpath='{ .spec.host }' --loglevel=4 > routehost"
-                  routeHost = readFile('routehost').trim()
+              stage('Code Analysis') {
+                steps {
+                  script {
+                    sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube:9000 -DskipTests=true"
+                  }
+                }
+              }
+
+              stage('Archive App') {
+                steps {
+                  sh "${mvnCmd} deploy -DskipTests=true -P nexus3"
+                }
+              }
+
+              stage('Build Image') {
+                steps {
+                  echo "building image ${app}"
+                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev"
+                }
+              }
+
+              stage('Deploy DEV') {
+                steps {
+                  openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
+                  openshiftVerifyDeployment depCfg: "${app}-dc", verbose: verbose, namespace: "dev"
+
+                }
+              }
+
+              stage('Deploy STAGE') {
+                steps {
+                  openshiftDeploy depCfg: "${app}-dc", verbose:verbose, namespace: "stage"
+                }
+              }
+
+              stage('Upload version artifact in PRO') {
+                steps {
+                  input message: "Test deployment in PRO. Approve?", id: "approval"
+                }
+              }
+
+              stage('Initialize PRO') {
+                steps {
+
+                  script {
+                    sh "oc get route ${appName} -n ${project} -o jsonpath='{ .spec.to.name }' --loglevel=4 > activeservice"
+                    activeService = readFile('activeservice').trim()
+
+                    if (activeService == "${project}-blue") {
+                      tag = "green"
+                      altTag = "blue"
+                    }
+
+                    sh "oc get route ${tag}-d${project} -n ${project} -o jsonpath='{ .spec.host }' --loglevel=4 > routehost"
+                    routeHost = readFile('routehost').trim()
+                  }
+                }
+              }
+
+              stage('Deploy Test PRO') {
+                steps {
+                  openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
+                  openshiftVerifyDeployment depCfg: "${project}-${tag}", verbose: verbose, namespace: project
+                }
+              }
+
+              stage('Active deploy to ${tag}') {
+                steps {
+                  input message: "Test deployment: http://${routeHost}. Approve?", id: "approval"
+                }
+              }
+
+              stage('Go Live') {
+                steps {
+                  sh "oc set -n ${project} route-backends ${appName} ${project}-${tag}=100 ${project}-${altTag}=0 --loglevel=4"
                 }
               }
             }
-
-            stage('Deploy Test PRO') {
-              steps {
-                openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
-                openshiftVerifyDeployment depCfg: "${project}-${tag}", verbose: verbose, namespace: project
-              }
-            }
-
-            stage('Active deploy to ${tag}') {
-              steps {
-                input message: "Test deployment: http://${routeHost}. Approve?", id: "approval"
-              }
-            }
-
-            stage('Go Live') {
-              steps {
-                sh "oc set -n ${project} route-backends ${appName} ${project}-${tag}=100 ${project}-${altTag}=0 --loglevel=4"
-              }
-            }
           }
-        }
       type: JenkinsPipeline
 - apiVersion: v1
   kind: ConfigMap

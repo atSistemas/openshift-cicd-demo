@@ -6,6 +6,7 @@ Openshift CI/CD provisioner demo
 - Running OpenShift 3.9
 - oc installed
 - system user must have adm policy add-cluster-role-to-user cluster-admin enabled
+- developer/any user must exist in order to run the demo
 
 # Steps
 - CI/CD Stack warm up
@@ -13,8 +14,6 @@ Openshift CI/CD provisioner demo
 - Deploy CI-Manager
 - Setup deployment strategies per environment
 - Initialise CI/CD Stack via CI-Manager
-- Start pipeline
-
 - Start pipeline
 
 ## CI/CD Stack warm up
@@ -46,4 +45,13 @@ OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-ci-manager-init
 ## Start pipeline
 ```
 OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-start-pipeline
+```
+
+# Bootstrap
+
+You can either run the demo following the previous steps o just run the bootstrap changing the OPENSHIFT_URL accordingly.
+
+## Start pipeline
+```
+./boostrap
 ```
