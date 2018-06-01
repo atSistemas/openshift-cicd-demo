@@ -5,56 +5,45 @@ Openshift CI/CD provisioner demo
 
 - Running OpenShift 3.9
 - oc installed
+- system user must have adm policy add-cluster-role-to-user cluster-admin enabled
 
 # Steps
 - CI/CD Stack warm up
 - Deploy CI/CD Stack
 - Deploy CI-Manager
-- Initialise CI/CD Stack via CI-Manager
-- Image Streams setup
 - Setup deployment strategies per environment
-- Deploy pipeline
+- Initialise CI/CD Stack via CI-Manager
 - Start pipeline
 
 - Start pipeline
 
 ## CI/CD Stack warm up
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-create-projects
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-admin-setup
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-create-projects
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-admin-setup
 ```
 
 ## Deploy CI/CD Stack
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-deploy-stack
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deploy-stack
 ```
 
 ## Deploy CI-Manager
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-deploy-ci-manager
-```
-
-## Initialise CICD Stack via CI-Manager
-```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-ci-manager-initialiser
-```
-
-## Image Streams setup
-```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-image-streams-setup
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deploy-ci-manager
 ```
 
 ## Setup deployment strategies per environment
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-deployment-strategies-setup
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-deployment-strategies-setup
 ```
 
-## Deploy pipeline
+## Initialise CICD Stack via CI-Manager
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-deploy-pipeline
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-ci-manager-initialiser
 ```
 
 ## Start pipeline
 ```
-OPENSHIFT_URL=https://myopenshift-console.me:8443 ./demo-cicd-start-pipeline
+OPENSHIFT_URL=https://openshift.mithrandir.gq:8443 ./demo-cicd-start-pipeline
 ```

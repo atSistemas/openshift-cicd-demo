@@ -9,4 +9,4 @@ oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 
 # Create Projects
 echo "Starting pipeline..."
-oc start-build openshift-deployment-strategies-pipeline
+oc start-build blue-green-pipeline
