@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: create-application-template
+message: This Template create all resources to deploy automatically a springboot application in dev environment
+metadata:
+  annotations:
+    description: Create springboot application in in dev environment
+    iconClass: icon-jboss
+    tags: dev
+  name: create-application-template
+parameters:
+- displayName: Project name
+  value: dev
+  name: PROJECT
+  required: true
+- displayName: Application name
+  value: polaris
+  name: APPLICATION_NAME
+  required: true
+- displayName: Application jar
+  value: spring-boot.jar
+  name: JAR_NAME
+  required: true
+- displayName: Application Git repository URL
+  value: https://github.com/atsistemas/polaris.git
+  name: APP_REPO_URL
+  required: true
+- displayName: Java 8 image stream
+  value: redhat-openjdk18-openshift
+  name: JAVA8_IMAGESTREAM
+  required: true
+objects:
+
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: create-application-job
+  spec:
+    activeDeadlineSeconds: 400
+    completions: 1
+    parallelism: 1
+    template:
+      spec:
+        containers:
+        - env:
+          - name: CICD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          command:
+          - /bin/bash
+          - -x
+          - -c
+          - |
+            oc set resources dc/jenkins --limits=memory=1Gi --requests=memory=512Mi
+            oc label dc jenkins app=jenkins --overwrite
+
+            HOSTNAME=$(oc get route jenkins -o template --template='{{.spec.host}}' | sed "s/jenkins-${CICD_NAMESPACE}.//g")
+            GOGS_HOSTNAME="gogs-$CICD_NAMESPACE.$HOSTNAME"
+
+
+            GOGS_SVC=$(oc get svc gogs -o template --template='{{.spec.clusterIP}}')
+            GOGS_USER=gogs
+            GOGS_PWD=gogs
+
+            oc rollout status dc gogs
+
+            _RETURN=$(curl -o /tmp/curl.log -sL --post302 -w "%{http_code}" http://$GOGS_SVC:3000/user/sign_up \
+              --form user_name=$GOGS_USER \
+              --form password=$GOGS_PWD \
+              --form retype=$GOGS_PWD \
+              --form email=admin@gogs.com)
+
+            sleep 5
+
+            if [ $_RETURN != "200" ] && [ $_RETURN != "302" ] ; then
+              echo "ERROR: Failed to create Gogs admin"
+              cat /tmp/curl.log
+              exit 255
+            fi
+
+            sleep 10
+
+            cat <<EOF > /tmp/data.json
+            {
+              "clone_addr": "https://github.com/atSistemas/polaris.git",
+              "uid": 1,
+              "repo_name": "polaris"
+            }
+            EOF
+
+            _RETURN=$(curl -o /tmp/curl.log -sL -w "%{http_code}" -H "Content-Type: application/json" \
+            -u $GOGS_USER:$GOGS_PWD -X POST http://$GOGS_SVC:3000/api/v1/repos/migrate -d @/tmp/data.json)
+
+            if [ $_RETURN != "201" ] ;then
+              echo "ERROR: Failed to imported polaris GitHub repo"
+              cat /tmp/curl.log
+              exit 255
+            fi
+
+            sleep 5
+
+            cat <<EOF > /tmp/data.json
+            {
+              "type": "gogs",
+              "config": {
+                "url": "https://openshift.default.svc.cluster.local/oapi/v1/namespaces/$CICD_NAMESPACE/buildconfigs/polaris-pipeline/webhooks/${WEBHOOK_SECRET}/generic",
+                "content_type": "json"
+              },
+              "events": [
+                "push"
+              ],
+              "active": true
+            }
+            EOF
+
+            _RETURN=$(curl -o /tmp/curl.log -sL -w "%{http_code}" -H "Content-Type: application/json" \
+            -u $GOGS_USER:$GOGS_PWD -X POST http://$GOGS_SVC:3000/api/v1/repos/gogs/polaris/hooks -d @/tmp/data.json)
+
+            if [ $_RETURN != "201" ] ; then
+              echo "ERROR: Failed to set webhook"
+              cat /tmp/curl.log
+              exit 255
+            fi
+          image: openshift/origin:v3.7.0
+          name: create-application-job
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        restartPolicy: Never
