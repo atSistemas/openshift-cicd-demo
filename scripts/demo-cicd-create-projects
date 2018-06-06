@@ -2,8 +2,8 @@
 
 [[ -z "$OPENSHIFT_URL" ]] && { echo "OpenShift URL not provided, exiting ..." ; exit 1; }
 
-export USERNAME=${USERNAME:="developer"}
-export PASSWD=${PASSWD:="any"}
+export USERNAME=${USERNAME:="system"}
+export PASSWD=${PASSWD:="admin"}
 
 oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 

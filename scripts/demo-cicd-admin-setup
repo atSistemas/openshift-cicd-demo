@@ -18,14 +18,13 @@ oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n stage
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pro
 
 # Manage policy on the cluster
-# oc adm policy add-role-to-user admin developer -n dev
+oc adm policy add-role-to-user admin developer -n dev
 #oc adm policy add-role-to-user admin developer -n stage
 #oc adm policy add-role-to-user admin developer -n pro
-#oc adm policy add-role-to-user admin developer -n cicd
+oc adm policy add-role-to-user admin developer -n cicd
 
 # Update the annotations on namespace resources
 #oc annotate --overwrite namespace dev demo=openshift-cd
 #oc annotate --overwrite namespace stage demo=openshift-cd
 #oc annotate --overwrite namespace pro demo=openshift-cd
 #oc annotate --overwrite namespace cicd  demo=openshift-cd
-

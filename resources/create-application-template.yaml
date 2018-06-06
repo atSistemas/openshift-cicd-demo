@@ -10,25 +10,13 @@ metadata:
     tags: dev
   name: create-application-template
 parameters:
-- displayName: Project name
-  value: dev
-  name: PROJECT
-  required: true
 - displayName: Application name
   value: polaris
-  name: APPLICATION_NAME
-  required: true
-- displayName: Application jar
-  value: spring-boot.jar
-  name: JAR_NAME
+  name: APP_NAME
   required: true
 - displayName: Application Git repository URL
   value: https://github.com/atsistemas/polaris.git
   name: APP_REPO_URL
-  required: true
-- displayName: Java 8 image stream
-  value: redhat-openjdk18-openshift
-  name: JAVA8_IMAGESTREAM
   required: true
 objects:
 
@@ -84,9 +72,9 @@ objects:
 
             cat <<EOF > /tmp/data.json
             {
-              "clone_addr": "https://github.com/atSistemas/polaris.git",
+              "clone_addr": "${APP_REPO_URL}",
               "uid": 1,
-              "repo_name": "polaris"
+              "repo_name": "${APP_NAME}"
             }
             EOF
 
@@ -94,7 +82,7 @@ objects:
             -u $GOGS_USER:$GOGS_PWD -X POST http://$GOGS_SVC:3000/api/v1/repos/migrate -d @/tmp/data.json)
 
             if [ $_RETURN != "201" ] ;then
-              echo "ERROR: Failed to imported polaris GitHub repo"
+              echo "ERROR: Failed to imported ${APP_REPO_URL} GitHub repo"
               cat /tmp/curl.log
               exit 255
             fi
@@ -105,7 +93,7 @@ objects:
             {
               "type": "gogs",
               "config": {
-                "url": "https://openshift.default.svc.cluster.local/oapi/v1/namespaces/$CICD_NAMESPACE/buildconfigs/polaris-pipeline/webhooks/${WEBHOOK_SECRET}/generic",
+                "url": "https://openshift.default.svc.cluster.local/oapi/v1/namespaces/$CICD_NAMESPACE/buildconfigs/${APP_NAME}-pipeline/webhooks/${WEBHOOK_SECRET}/generic",
                 "content_type": "json"
               },
               "events": [
@@ -116,7 +104,7 @@ objects:
             EOF
 
             _RETURN=$(curl -o /tmp/curl.log -sL -w "%{http_code}" -H "Content-Type: application/json" \
-            -u $GOGS_USER:$GOGS_PWD -X POST http://$GOGS_SVC:3000/api/v1/repos/gogs/polaris/hooks -d @/tmp/data.json)
+            -u $GOGS_USER:$GOGS_PWD -X POST http://$GOGS_SVC:3000/api/v1/repos/gogs/${APP_NAME}/hooks -d @/tmp/data.json)
 
             if [ $_RETURN != "201" ] ; then
               echo "ERROR: Failed to set webhook"
