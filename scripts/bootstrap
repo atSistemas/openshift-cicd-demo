@@ -14,7 +14,7 @@ oc cluster up
 export OPENSHIFT_URL=https://localhost:8443
 
 ./demo-cicd-create-projects && \
-./demo-cicd-admin-setup
+./demo-cicd-admin-setup && \
 ./demo-cicd-deploy-stack && \
 ./demo-cicd-create-application
 # ./demo-cicd-deployment-strategies-setup && \
