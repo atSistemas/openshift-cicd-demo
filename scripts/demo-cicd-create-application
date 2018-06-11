@@ -7,4 +7,4 @@ export PASSWD=${PASSWD:="any"}
 
 oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 
-oc new-app -f ../resources/create-application-template.yaml -n dev
+oc new-app -f ../resources/create-application-template.yaml -n cicd
