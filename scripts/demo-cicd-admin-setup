@@ -7,6 +7,9 @@ export PASSWD=${PASSWD:="admin"}
 
 oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 
+# Import image centos7-springboot to build s2i
+oc import-image jantonioporras/centos7-springboot:latest --confirm -n openshift
+
 # Make sure latest Jenkins image is installed
 oc import-image jenkins:v3.7 --from="registry.access.redhat.com/openshift3/jenkins-2-rhel7" --confirm -n openshift
 oc tag jenkins:v3.7 jenkins:latest -n openshift

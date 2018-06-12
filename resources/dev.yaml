@@ -23,11 +23,11 @@ parameters:
   name: JARNAME
   required: true
 - displayName: Application repository URL
-  value: https://github.com/atsistemas/polaris.git
+  value: https://github.com/atSistemas/S2I-SpringBoot.git
   name: APP_REPO_URL
   required: true
 - displayName: Java 8 image stream
-  value: redhat-openjdk18-openshift
+  value: centos7-springboot
   name: JAVA8_IMAGESTREAM
   required: true
 objects:
@@ -145,8 +145,13 @@ objects:
     type: Git
    strategy:
     sourceStrategy:
+      env:
+        - name: JAR_FILE_URL
+          value: >-
+            https://github.com/japorras/openshift-tasks-bin-deploy/raw/master/spring-boot.jar
       from:
         kind: ImageStreamTag
         name: '${JAVA8_IMAGESTREAM}:latest'
+        namespace: openshift
     type: Source
   triggers: []
