@@ -7,5 +7,6 @@ export PASSWD=${PASSWD:="any"}
 
 oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 
+oc create configmap jenkins-config -f ../resources/jenkins-config.yaml -n cicd
 oc new-app jenkins-persistent -n cicd
 oc new-app -f ../resources/cicd-stack.yaml -n cicd
