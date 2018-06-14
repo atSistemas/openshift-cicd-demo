@@ -124,7 +124,7 @@ objects:
     to:
       kind: Service
       name: ${APP}-service
-- apiVersion: v1
+- apiVersion: v1 
   kind: BuildConfig
   metadata:
    labels:
@@ -138,20 +138,13 @@ objects:
       name: '${APP}:latest'
    runPolicy: Serial
    source:
-    contextDir: /
-    git:
-      ref: master
-      uri: ${APP_REPO_URL}
-    type: Git
+    binary: {}
+    type: Binary 
    strategy:
-    sourceStrategy:
-      env:
-        - name: JAR_FILE_URL
-          value: >-
-            https://github.com/japorras/openshift-tasks-bin-deploy/raw/master/spring-boot.jar
+    dockerStrategy:
       from:
         kind: ImageStreamTag
-        name: '${JAVA8_IMAGESTREAM}:latest'
+        name: '${JAVA8_IMAGESTREAM}:2.4'
         namespace: openshift
-    type: Source
+    type: Docker
   triggers: []
