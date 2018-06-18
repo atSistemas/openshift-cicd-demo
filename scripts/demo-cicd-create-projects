@@ -2,10 +2,13 @@
 
 [[ -z "$OPENSHIFT_URL" ]] && { echo "OpenShift URL not provided, exiting ..." ; exit 1; }
 
-export USERNAME=${USERNAME:="developer"}
+export USR=${USR:="developer"}
 export PASSWD=${PASSWD:="any"}
 
-oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
+echo "${USR}"
+echo "${PASSWD}"
+
+oc login -u $USR -p $PASSWD $OPENSHIFT_URL
 
 # Create Projects
 echo "Creating DEV namespace ..."

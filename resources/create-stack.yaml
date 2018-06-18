@@ -1,0 +1,254 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: create-stack
+  group: cicd
+metadata:
+  annotations:
+    iconClass: icon-jenkins
+    tags: instant-app,jenkins,gogs,nexus,cicd
+  name: cicd
+message: "Use the following credentials for login:\nJenkins: use your OpenShift credentials\nNexus: admin/admin123\nSonarQube: admin/admin\nGogs Git Server: gogs/gogs"
+objects:
+- apiVersion: v1
+  groupNames: null
+  kind: RoleBinding
+  metadata:
+    name: default_admin
+  roleRef:
+    name: admin
+  subjects:
+  - kind: ServiceAccount
+    name: default
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      pipeline.alpha.openshift.io/uses: '[{"name": "jenkins", "namespace": "", "kind": "DeploymentConfig"}]'
+    labels:
+      app: blue-green-pipeline
+      name: blue-green-pipeline
+    name: blue-green-pipeline
+  spec:
+    runPolicy: Parallel
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfile: |-
+          def version, activeService, routeHost, mvnCmd = "mvn -s configuration/settings.xml"
+          def appName="dpro"
+          def project="pro"
+          def tag="blue"
+          def altTag="green"
+          def verbose="false"
+          def app="polaris"
+
+          pipeline {
+            agent {
+              label 'maven'
+            }
+            stages {
+              stage('Build App') {
+                steps {
+                  git branch: 'feature/cicd-demo', url: 'http://gogs:3000/gogs/polaris.git'
+                  script {
+                      def pom = readMavenPom file: 'pom.xml'
+                      version = pom.version
+                  }
+                  sh "mvn install -DskipTests=true"
+                }
+              }
+              stage('Test') {
+                steps {
+                  sh "mvn test"
+                  step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+                }
+              }
+
+              stage('Code Analysis') {
+                steps {
+                  script {
+                    sh "mvn sonar:sonar -Dsonar.host.url=http://sonarqube:9000 -DskipTests=true"
+                  }
+                }
+              }
+
+              stage('Archive App') {
+                steps {
+                  sh "${mvnCmd} deploy -DskipTests=true -P nexus3"
+                }
+              }
+
+              stage('Build Image') {
+                steps {
+                  echo "building image ${app}"
+                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev"
+                }
+              }
+
+              stage('Deploy DEV') {
+                steps {
+                  openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
+                  openshiftVerifyDeployment depCfg: "${app}-dc", verbose: verbose, namespace: "dev"
+
+                }
+              }
+
+              stage('Deploy STAGE') {
+                steps {
+                  openshiftDeploy depCfg: "${app}-dc", verbose:verbose, namespace: "stage"
+                }
+              }
+
+              stage('Upload version artifact in PRO') {
+                steps {
+                  input message: "Test deployment in PRO. Approve?", id: "approval"
+                }
+              }
+
+              stage('Initialize PRO') {
+                steps {
+
+                  script {
+                    sh "oc get route ${appName} -n ${project} -o jsonpath='{ .spec.to.name }' --loglevel=4 > activeservice"
+                    activeService = readFile('activeservice').trim()
+
+                    if (activeService == "${project}-blue") {
+                      tag = "green"
+                      altTag = "blue"
+                    }
+
+                    sh "oc get route ${tag}-d${project} -n ${project} -o jsonpath='{ .spec.host }' --loglevel=4 > routehost"
+                    routeHost = readFile('routehost').trim()
+                  }
+                }
+              }
+
+              stage('Deploy Test PRO') {
+                steps {
+                  openshiftTag srcStream: app, srcTag: 'latest', destStream: app, destTag: tag, verbose: verbose, namespace: "dev"
+                  openshiftVerifyDeployment depCfg: "${project}-${tag}", verbose: verbose, namespace: project
+                }
+              }
+
+              stage('Active deploy to ${tag}') {
+                steps {
+                  input message: "Test deployment: http://${routeHost}. Approve?", id: "approval"
+                }
+              }
+
+              stage('Go Live') {
+                steps {
+                  sh "oc set -n ${project} route-backends ${appName} ${project}-${tag}=100 ${project}-${altTag}=0 --loglevel=4"
+                }
+              }
+            }
+          }
+      type: JenkinsPipeline
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: cicd-pipeline
+      role: jenkins-slave
+    name: jenkins-slaves
+  data:
+    maven-template: |-
+      <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+        <inheritFrom></inheritFrom>
+        <name>maven</name>
+        <privileged>false</privileged>
+        <alwaysPullImage>false</alwaysPullImage>
+        <instanceCap>2147483647</instanceCap>
+        <idleMinutes>0</idleMinutes>
+        <label>maven</label>
+        <serviceAccount>jenkins</serviceAccount>
+        <nodeSelector></nodeSelector>
+        <customWorkspaceVolumeEnabled>false</customWorkspaceVolumeEnabled>
+        <workspaceVolume class="org.csanchez.jenkins.plugins.kubernetes.volumes.workspace.EmptyDirWorkspaceVolume">
+          <memory>false</memory>
+        </workspaceVolume>
+        <volumes />
+        <containers>
+          <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+            <name>jnlp</name>
+            <image>openshift/jenkins-agent-maven-35-centos7</image>
+            <privileged>false</privileged>
+            <alwaysPullImage>false</alwaysPullImage>
+            <workingDir>/tmp</workingDir>
+            <command></command>
+            <args>${computer.jnlpmac} ${computer.name}</args>
+            <ttyEnabled>false</ttyEnabled>
+            <resourceRequestCpu>200m</resourceRequestCpu>
+            <resourceRequestMemory>512Mi</resourceRequestMemory>
+            <resourceLimitCpu>2</resourceLimitCpu>
+            <resourceLimitMemory>4Gi</resourceLimitMemory>
+            <envVars/>
+          </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+        </containers>
+        <envVars/>
+        <annotations/>
+        <imagePullSecrets/>
+      </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: cicd-demo-installer
+  spec:
+    activeDeadlineSeconds: 400
+    completions: 1
+    parallelism: 1
+    template:
+      spec:
+        containers:
+        - env:
+          - name: CICD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          command:
+          - /bin/bash
+          - -x
+          - -c
+          - |
+            oc set resources dc/jenkins --limits=memory=1Gi --requests=memory=512Mi
+            oc label dc jenkins app=jenkins --overwrite
+
+            HOSTNAME=$(oc get route jenkins -o template --template='{{.spec.host}}' | sed "s/jenkins-${CICD_NAMESPACE}.//g")
+            GOGS_HOSTNAME="gogs-$CICD_NAMESPACE.$HOSTNAME"
+
+            oc new-app -f https://raw.githubusercontent.com/OpenShiftDemos/gogs-openshift-docker/master/openshift/gogs-template.yaml \
+                --param=GOGS_VERSION=0.11.29 \
+                --param=HOSTNAME=$GOGS_HOSTNAME \
+                --param=SKIP_TLS_VERIFY=true
+
+            sleep 5
+
+            oc new-app -f https://raw.githubusercontent.com/RHsyseng/docker-rhel-sonarqube/master/templates/sonarqube-ephemeral-template.yaml --param=SONARQUBE_SERVICE_NAME=sonarqube
+
+            oc new-app -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus3-template.yaml --param=NEXUS_VERSION=3.6.1 --param=MAX_MEMORY=2Gi
+
+            GOGS_SVC=$(oc get svc gogs -o template --template='{{.spec.clusterIP}}')
+            GOGS_USER=gogs
+            GOGS_PWD=gogs
+
+            oc rollout status dc gogs
+
+             _RETURN=$(curl -o /tmp/curl.log -sL --post302 -w "%{http_code}" http://$GOGS_SVC:3000/user/sign_up \
+              --form user_name=$GOGS_USER \
+              --form password=$GOGS_PWD \
+              --form retype=$GOGS_PWD \
+              --form email=admin@gogs.com)
+
+            sleep 5
+
+            if [ $_RETURN != "200" ] && [ $_RETURN != "302" ] ; then
+              echo "ERROR: Failed to create Gogs admin"
+              cat /tmp/curl.log
+              exit 255
+            fi
+          image: openshift/origin:v3.9.0
+          name: cicd-demo-installer-job
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        restartPolicy: Never
