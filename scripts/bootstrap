@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-create-projects && \
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-admin-setup && \
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-stack && \
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-ci-manager && \
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deployment-strategies-setup && \
+./demo-cicd-create-projects && \
+./demo-cicd-admin-setup && \
+./demo-cicd-deploy-stack && \
+./demo-cicd-deploy-ci-manager && \
+./demo-cicd-deployment-strategies-setup && \
 sleep 60
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-ci-manager-initialiser && \
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-start-pipeline
-
+./demo-cicd-ci-manager-initialiser && \
+./demo-cicd-start-pipeline

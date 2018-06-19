@@ -18,33 +18,34 @@ Openshift CI/CD provisioner demo
 
 ## CI/CD Stack warm up
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-create-projects
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-admin-setup
+export OPENSHIFT_URL=https://change.this.openshift.url:8443 
+./demo-cicd-create-projects
+./demo-cicd-admin-setup
 ```
 
 ## Deploy CI/CD Stack
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-stack
+./demo-cicd-deploy-stack
 ```
 
 ## Deploy CI-Manager
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deploy-ci-manager
+./demo-cicd-deploy-ci-manager
 ```
 
 ## Setup deployment strategies per environment
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-deployment-strategies-setup
+./demo-cicd-deployment-strategies-setup
 ```
 
 ## Initialise CICD Stack via CI-Manager
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-ci-manager-initialiser
+./demo-cicd-ci-manager-initialiser
 ```
 
 ## Start pipeline
 ```
-OPENSHIFT_URL=https://change.this.openshift.url:8443 ./demo-cicd-start-pipeline
+./demo-cicd-start-pipeline
 ```
 
 # Bootstrap
@@ -53,5 +54,6 @@ You can either run the demo following the previous steps o just run the bootstra
 
 ## Start pipeline
 ```
-./boostrap
+export OPENSHIFT_URL=https://change.this.openshift.url:8443 
+./bootstrap
 ```
