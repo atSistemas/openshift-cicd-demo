@@ -7,7 +7,7 @@
 ./demo-cicd-deploy-stack && \
 ./demo-cicd-deploy-ci-manager && \
 ./demo-cicd-deployment-strategies-setup && \
-sleep 60
+sleep 120
 ./demo-cicd-ci-manager-initialiser && \
 ./demo-cicd-start-pipeline
 

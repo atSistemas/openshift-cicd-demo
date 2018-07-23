@@ -84,7 +84,7 @@ objects:
               stage('Build Image') {
                 steps {
                   echo "building image ${app}"
-                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev", waitTime: "200", waitUnit: 'min'
+                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev"
                 }
               }
 
