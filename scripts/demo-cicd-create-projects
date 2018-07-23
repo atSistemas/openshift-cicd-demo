@@ -5,7 +5,7 @@
 export USERNAME=${USERNAME:="developer"}
 export PASSWD=${PASSWD:="any"}
 
-oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
+oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL --insecure-skip-tls-verify
 
 # Create Projects
 echo "Creating DEV namespace ..."

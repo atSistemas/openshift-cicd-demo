@@ -46,6 +46,9 @@ objects:
             agent {
               label 'maven'
             }
+            options {
+              timeout(time: 20, unit: 'MINUTES') 
+            }
             stages {
               stage('Build App') {
                 steps {
@@ -81,7 +84,7 @@ objects:
               stage('Build Image') {
                 steps {
                   echo "building image ${app}"
-                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev"
+                  openshiftBuild bldCfg: app, showBuildLogs: "true", verbose: verbose, namespace: "dev", waitTime: "20", waitUnit: 'MINUTES'
                 }
               }
 
@@ -159,7 +162,7 @@ objects:
         <privileged>false</privileged>
         <alwaysPullImage>false</alwaysPullImage>
         <instanceCap>2147483647</instanceCap>
-        <idleMinutes>0</idleMinutes>
+        <idleMinutes>10</idleMinutes>
         <label>maven</label>
         <serviceAccount>jenkins</serviceAccount>
         <nodeSelector></nodeSelector>
@@ -210,7 +213,7 @@ objects:
           - -x
           - -c
           - |
-            oc set resources dc/jenkins --limits=memory=1Gi --requests=memory=512Mi
+            oc set resources dc/jenkins --limits=memory=2Gi --requests=memory=1Gi
             oc label dc jenkins app=jenkins --overwrite
 
             HOSTNAME=$(oc get route jenkins -o template --template='{{.spec.host}}' | sed "s/jenkins-${CICD_NAMESPACE}.//g")
