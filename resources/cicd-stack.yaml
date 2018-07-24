@@ -9,6 +9,11 @@ metadata:
     tags: instant-app,jenkins,gogs,nexus,cicd
   name: cicd
 message: "Use the following credentials for login:\nJenkins: use your OpenShift credentials\nNexus: admin/admin123\nSonarQube: admin/admin\nGogs Git Server: gogs/gogs"
+parameters:
+- description: Webhook secret
+  value: R8UmOgfg
+  name: WEBHOOK_SECRET
+  required: true
 objects:
 - apiVersion: v1
   groupNames: null
@@ -30,6 +35,13 @@ objects:
       name: blue-green-pipeline
     name: blue-green-pipeline
   spec:
+    triggers:
+      - type: GitHub
+        github:
+          secret: ${WEBHOOK_SECRET}
+      - type: Generic
+        generic:
+          secret: ${WEBHOOK_SECRET}
     runPolicy: Parallel
     strategy:
       jenkinsPipelineStrategy:

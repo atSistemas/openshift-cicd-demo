@@ -11,8 +11,7 @@ metadata:
 message: "Use the following credentials for login:\nGogs Git Server: gogs/gogs"
 parameters:
 - description: Webhook secret
-  from: '[a-zA-Z0-9]{8}'
-  generate: expression
+  value: R8UmOgfg
   name: WEBHOOK_SECRET
   required: true
 objects:
