@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: dev-create-buildconfig from gogs repository
+message: This Template create the builconfig to build project from gogs repository in dev environment
+metadata:
+  annotations:
+    description: This it deploy springboot application in in dev environment
+    iconClass: icon-jboss
+    tags: dev, recreate-strategy
+  name: dev-recreate-strategy
+parameters:
+- displayName: Project name
+  value: dev
+  name: PROJECT
+  required: true
+- displayName: Application name
+  value: polaris
+  name: APP
+  required: true
+- displayName: Application repository URL
+  name: APP_REPO_URL
+  required: true
+- displayName: Java 8 image stream
+  value: redhat-openjdk18-openshift
+  name: JAVA8_IMAGESTREAM
+  required: true
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: ${APP}
+    name: ${APP}
+    namespace: ${PROJECT}
+  spec:
+   output:
+    to:
+      kind: ImageStreamTag
+      name: '${APP}:latest'
+   runPolicy: Serial
+   source:
+    contextDir: /
+    git:
+      ref: master
+      uri: ${APP_REPO_URL}
+    type: Git
+   strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: '${JAVA8_IMAGESTREAM}:latest'
+    type: Source
+   triggers: []
