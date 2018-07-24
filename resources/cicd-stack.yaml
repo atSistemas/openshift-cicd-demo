@@ -58,9 +58,6 @@ objects:
             agent {
               label 'maven'
             }
-            options {
-              timeout(time: 20, unit: 'MINUTES') 
-            }
             stages {
               stage('Build App') {
                 steps {
@@ -145,9 +142,9 @@ objects:
                 }
               }
 
-              stage('Active deploy to ${tag}') {
+              stage('Select active deploymen') {
                 steps {
-                  input message: "Test deployment: http://${routeHost}. Approve?", id: "approval"
+                  input message: "Test deployment ${tag}: http://${routeHost}. Approve?", id: "approval"
                 }
               }
 
