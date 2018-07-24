@@ -10,14 +10,6 @@ metadata:
   name: generate-hook
 message: "Use the following credentials for login:\nGogs Git Server: gogs/gogs"
 parameters:
-- displayName: DEV project name
-  value: dev
-  name: DEV_PROJECT
-  required: true
-- displayName: STAGE project name
-  value: stage
-  name: STAGE_PROJECT
-  required: true
 - description: Webhook secret
   from: '[a-zA-Z0-9]{8}'
   generate: expression

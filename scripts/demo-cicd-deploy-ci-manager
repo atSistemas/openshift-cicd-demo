@@ -8,3 +8,4 @@ export PASSWD=${PASSWD:="any"}
 oc login -u $USERNAME -p $PASSWD $OPENSHIFT_URL
 
 oc new-app -f ../resources/ci-manager.yaml -n cicd
+oc new-app -f ../resources/webhook-light.yaml -n cicd

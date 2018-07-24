@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: dev-create-buildconfig from gogs repository
+  template: dev-create-buildconfig
 message: This Template create the builconfig to build project from gogs repository in dev environment
 metadata:
   annotations:

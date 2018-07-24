@@ -231,7 +231,8 @@ objects:
             oc new-app -f https://raw.githubusercontent.com/OpenShiftDemos/nexus/master/nexus3-template.yaml --param=NEXUS_VERSION=3.6.1 --param=MAX_MEMORY=2Gi
             
             GOGS_ROUTE=$(oc get route gogs -o template --template='{{.spec.host}}')
-            oc new-app -f https://github.com/atSistemas/openshift-cicd-demo/blob/feature/demo-iberdrolamaster/bcpolaris.yaml --param=APP_REPO_URL=http://$GOGS_ROUTE/gogs/polaris.git -n dev
+            oc new-app -f https://raw.githubusercontent.com/atSistemas/openshift-cicd-demo/feature/demo-iberdrola/resources/bcpolaris.yaml --param=APP_REPO_URL=http://$GOGS_ROUTE/gogs/polaris.git -n dev
+            # oc new-app -f https://github.com/atSistemas/openshift-cicd-demo/blob/feature/demo-iberdrolamaster/bcpolaris.yaml --param=APP_REPO_URL=http://$GOGS_ROUTE/gogs/polaris.git -n dev
 
             GOGS_SVC=$(oc get svc gogs -o template --template='{{.spec.clusterIP}}')
             GOGS_USER=gogs
