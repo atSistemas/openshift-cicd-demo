@@ -16,6 +16,7 @@ echo "Adding roles to admin user ..."
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n dev
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n stage
 oc policy add-role-to-user edit system:serviceaccount:cicd:jenkins -n pro
+oc policy add-role-to-user edit system:serviceaccount:cicd:default -n dev
 
 # Manage policy on the cluster
 # oc adm policy add-role-to-user admin developer -n dev

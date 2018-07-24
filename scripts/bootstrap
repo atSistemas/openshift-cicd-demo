@@ -10,4 +10,3 @@
 sleep 120
 ./demo-cicd-ci-manager-initialiser && \
 ./demo-cicd-start-pipeline
-

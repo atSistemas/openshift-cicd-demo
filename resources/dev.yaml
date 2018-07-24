@@ -22,10 +22,6 @@ parameters:
   value: spring-boot.jar
   name: JARNAME
   required: true
-- displayName: Application repository URL
-  value: https://github.com/atsistemas/polaris.git
-  name: APP_REPO_URL
-  required: true
 - displayName: Java 8 image stream
   value: redhat-openjdk18-openshift
   name: JAVA8_IMAGESTREAM
@@ -124,29 +120,3 @@ objects:
     to:
       kind: Service
       name: ${APP}-service
-- apiVersion: v1
-  kind: BuildConfig
-  metadata:
-   labels:
-     app: ${APP}
-   name: ${APP}
-   namespace: ${PROJECT}
-  spec:
-   output:
-    to:
-      kind: ImageStreamTag
-      name: '${APP}:latest'
-   runPolicy: Serial
-   source:
-    contextDir: /
-    git:
-      ref: master
-      uri: ${APP_REPO_URL}
-    type: Git
-   strategy:
-    sourceStrategy:
-      from:
-        kind: ImageStreamTag
-        name: '${JAVA8_IMAGESTREAM}:latest'
-    type: Source
-  triggers: []
